@@ -330,49 +330,7 @@ public:
 				m_fbh = bgfx::createFrameBuffer(BX_COUNTOF(m_fbtextures), m_fbtextures, true);
 			}
 
-			imguiBeginFrame(m_mouseState.m_mx
-					,  m_mouseState.m_my
-					, (m_mouseState.m_buttons[entry::MouseButton::Left  ] ? IMGUI_MBUT_LEFT   : 0)
-					| (m_mouseState.m_buttons[entry::MouseButton::Right ] ? IMGUI_MBUT_RIGHT  : 0)
-					| (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0)
-					,  m_mouseState.m_mz
-					, uint16_t(m_width)
-					, uint16_t(m_height)
-					);
-
-			showExampleDialog(this);
-
-			ImGui::SetNextWindowPos(
-				  ImVec2(m_width - m_width / 5.0f - 10.0f, 10.0f)
-				, ImGuiCond_FirstUseEver
-				);
-			ImGui::SetNextWindowSize(
-				  ImVec2(m_width / 5.0f, m_height / 2.0f)
-				, ImGuiCond_FirstUseEver
-				);
-			ImGui::Begin("Settings"
-				, NULL
-				, 0
-				);
-
-			ImGui::SliderFloat("Speed", &m_speed, 0.0f, 1.0f);
-			ImGui::Separator();
-
-			ImGui::SliderFloat("Middle gray", &m_middleGray, 0.1f, 1.0f);
-			ImGui::SliderFloat("White point", &m_white,      0.1f, 2.0f);
-			ImGui::SliderFloat("Threshold",   &m_threshold,  0.1f, 2.0f);
-
-			if (bgfx::isValid(m_rb) )
-			{
-				union { uint32_t color; uint8_t bgra[4]; } cast = { m_lumBgra8 };
-				float exponent = cast.bgra[3]/255.0f * 255.0f - 128.0f;
-				float lumAvg   = cast.bgra[2]/255.0f * bx::exp2(exponent);
-				ImGui::SliderFloat("Lum Avg", &lumAvg, 0.0f, 1.0f);
-			}
-
-			ImGui::End();
-
-			imguiEndFrame();
+			drawImGui();
 
 			// This dummy draw call is here to make sure that view 0 is cleared
 			// if no other draw calls are submitted to view 0.
@@ -387,7 +345,7 @@ public:
 			m_time += (float)(frameTime*m_speed/freq);
 
 			bgfx::ViewId shuffle[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-			bx::shuffle(&m_rng, shuffle, BX_COUNTOF(shuffle) );
+		/*	bx::shuffle(&m_rng, shuffle, BX_COUNTOF(shuffle) );*/
 
 			bgfx::ViewId hdrSkybox       = shuffle[0];
 			bgfx::ViewId hdrMesh         = shuffle[1];
@@ -574,6 +532,53 @@ public:
 		}
 
 		return false;
+	}
+
+	void drawImGui()
+	{
+		imguiBeginFrame(m_mouseState.m_mx
+			, m_mouseState.m_my
+			, (m_mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0)
+			| (m_mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0)
+			| (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0)
+			, m_mouseState.m_mz
+			, uint16_t(m_width)
+			, uint16_t(m_height)
+		);
+
+		showExampleDialog(this);
+
+		ImGui::SetNextWindowPos(
+			ImVec2(m_width - m_width / 5.0f - 10.0f, 10.0f)
+			, ImGuiCond_FirstUseEver
+		);
+		ImGui::SetNextWindowSize(
+			ImVec2(m_width / 5.0f, m_height / 2.0f)
+			, ImGuiCond_FirstUseEver
+		);
+		ImGui::Begin("Settings"
+			, NULL
+			, 0
+		);
+
+		ImGui::SliderFloat("Speed", &m_speed, 0.0f, 1.0f);
+		ImGui::Separator();
+
+		ImGui::SliderFloat("Middle gray", &m_middleGray, 0.1f, 1.0f);
+		ImGui::SliderFloat("White point", &m_white, 0.1f, 2.0f);
+		ImGui::SliderFloat("Threshold", &m_threshold, 0.1f, 2.0f);
+
+		if (bgfx::isValid(m_rb))
+		{
+			union { uint32_t color; uint8_t bgra[4]; } cast = { m_lumBgra8 };
+			float exponent = cast.bgra[3] / 255.0f * 255.0f - 128.0f;
+			float lumAvg = cast.bgra[2] / 255.0f * bx::exp2(exponent);
+			ImGui::SliderFloat("Lum Avg", &lumAvg, 0.0f, 1.0f);
+		}
+
+		ImGui::End();
+
+		imguiEndFrame();
 	}
 
 	entry::MouseState m_mouseState;
