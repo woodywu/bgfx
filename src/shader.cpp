@@ -4,9 +4,6 @@
  */
 
 #include "bgfx_p.h"
-#include "shader_dxbc.h"
-#include "shader_dx9bc.h"
-#include "shader_spirv.h"
 
 namespace bgfx
 {
@@ -115,62 +112,10 @@ namespace bgfx
 		return s_textureDimensionToId[_dim].id;
 	}
 
-	static bool printAsm(uint32_t _offset, const DxbcInstruction& _instruction, void* _userData)
-	{
-		BX_UNUSED(_offset);
-		bx::WriterI* writer = reinterpret_cast<bx::WriterI*>(_userData);
-		char temp[512];
-		toString(temp, sizeof(temp), _instruction);
-		bx::write(writer, temp, (int32_t)bx::strLen(temp) );
-		bx::write(writer, '\n');
-		return true;
-	}
-
-	static bool printAsm(uint32_t _offset, const Dx9bcInstruction& _instruction, void* _userData)
-	{
-		BX_UNUSED(_offset);
-		bx::WriterI* writer = reinterpret_cast<bx::WriterI*>(_userData);
-		char temp[512];
-		toString(temp, sizeof(temp), _instruction);
-		bx::write(writer, temp, (int32_t)bx::strLen(temp) );
-		bx::write(writer, '\n');
-		return true;
-	}
-
-	static bool printAsm(uint32_t _offset, const SpvInstruction& _instruction, void* _userData)
-	{
-		BX_UNUSED(_offset);
-		bx::WriterI* writer = reinterpret_cast<bx::WriterI*>(_userData);
-		char temp[512];
-		toString(temp, sizeof(temp), _instruction);
-		bx::write(writer, temp, (int32_t)bx::strLen(temp) );
-		bx::write(writer, '\n');
-		return true;
-	}
-
 	void disassembleByteCode(bx::WriterI* _writer, bx::ReaderSeekerI* _reader, bx::Error* _err)
 	{
 		uint32_t magic;
 		bx::peek(_reader, magic);
-
-		if (magic == SPV_CHUNK_HEADER)
-		{
-			SpirV spirv;
-			read(_reader, spirv, _err);
-			parse(spirv.shader, printAsm, _writer, _err);
-		}
-		else if (magic == DXBC_CHUNK_HEADER)
-		{
-			DxbcContext dxbc;
-			read(_reader, dxbc, _err);
-			parse(dxbc.shader, printAsm, _writer, _err);
-		}
-		else
-		{
-			Dx9bc dx9bc;
-			read(_reader, dx9bc, _err);
-			parse(dx9bc.shader, printAsm, _writer, _err);
-		}
 	}
 
 	void disassemble(bx::WriterI* _writer, bx::ReaderSeekerI* _reader, bx::Error* _err)
