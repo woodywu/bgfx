@@ -105,16 +105,11 @@ static bgfx::ShaderHandle loadShader(bx::FileReaderI* _reader, const char* _name
 	switch (bgfx::getRendererType() )
 	{
 	case bgfx::RendererType::Noop:
-	case bgfx::RendererType::Direct3D9:  shaderPath = "shaders/dx9/";   break;
-	case bgfx::RendererType::Direct3D11:
-	case bgfx::RendererType::Direct3D12: shaderPath = "shaders/dx11/";  break;
 	case bgfx::RendererType::Gnm:        shaderPath = "shaders/pssl/";  break;
 	case bgfx::RendererType::Metal:      shaderPath = "shaders/metal/"; break;
 	case bgfx::RendererType::Nvn:        shaderPath = "shaders/nvn/";   break;
 	case bgfx::RendererType::OpenGL:     shaderPath = "shaders/glsl/";  break;
 	case bgfx::RendererType::OpenGLES:   shaderPath = "shaders/essl/";  break;
-	case bgfx::RendererType::Vulkan:     shaderPath = "shaders/spirv/"; break;
-	case bgfx::RendererType::WebGPU:     shaderPath = "shaders/spirv/"; break;
 
 	case bgfx::RendererType::Count:
 		BX_ASSERT(false, "You should not be here!");
@@ -693,28 +688,9 @@ Args::Args(int _argc, const char* const* _argv)
 	{
 		m_type = bgfx::RendererType::OpenGL;
 	}
-	else if (cmdLine.hasArg("vk") )
-	{
-		m_type = bgfx::RendererType::Vulkan;
-	}
 	else if (cmdLine.hasArg("noop") )
 	{
 		m_type = bgfx::RendererType::Noop;
-	}
-	else if (BX_ENABLED(BX_PLATFORM_WINDOWS|BX_PLATFORM_WINRT|BX_PLATFORM_XBOXONE) )
-	{
-		if (cmdLine.hasArg("d3d9") )
-		{
-			m_type = bgfx::RendererType::Direct3D9;
-		}
-		else if (cmdLine.hasArg("d3d11") )
-		{
-			m_type = bgfx::RendererType::Direct3D11;
-		}
-		else if (cmdLine.hasArg("d3d12") )
-		{
-			m_type = bgfx::RendererType::Direct3D12;
-		}
 	}
 	else if (BX_ENABLED(BX_PLATFORM_OSX) )
 	{

@@ -44,16 +44,11 @@ namespace bgfx
 	static const uint8_t (*s_attribTypeSize[])[AttribType::Count][4] =
 	{
 		&s_attribTypeSizeD3D9,  // Noop
-		&s_attribTypeSizeD3D9,  // Direct3D9
-		&s_attribTypeSizeD3D1x, // Direct3D11
-		&s_attribTypeSizeD3D1x, // Direct3D12
 		&s_attribTypeSizeD3D1x, // Gnm
 		&s_attribTypeSizeGl,    // Metal
 		&s_attribTypeSizeGl,    // Nvn
 		&s_attribTypeSizeGl,    // OpenGLES
 		&s_attribTypeSizeGl,    // OpenGL
-		&s_attribTypeSizeD3D1x, // Vulkan
-		&s_attribTypeSizeD3D1x, // WebGPU
 		&s_attribTypeSizeD3D9,  // Count
 	};
 	BX_STATIC_ASSERT(BX_COUNTOF(s_attribTypeSize) == RendererType::Count+1);

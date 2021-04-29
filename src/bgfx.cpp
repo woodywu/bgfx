@@ -769,9 +769,9 @@ namespace bgfx
 		uint32_t xx = 0;
 
 		const float texelWidth      = 1.0f/2048.0f;
-		const float texelWidthHalf  = RendererType::Direct3D9 == g_caps.rendererType ? 0.0f : texelWidth*0.5f;
+		const float texelWidthHalf  = texelWidth*0.5f;
 		const float texelHeight     = 1.0f/24.0f;
-		const float texelHeightHalf = RendererType::Direct3D9 == g_caps.rendererType ? texelHeight*0.5f : 0.0f;
+		const float texelHeightHalf = 0.0f;
 		const float utop       = (_mem.m_small ? 0.0f :  8.0f)*texelHeight + texelHeightHalf;
 		const float ubottom    = (_mem.m_small ? 8.0f : 24.0f)*texelHeight + texelHeightHalf;
 		const float fontHeight = (_mem.m_small ? 8.0f : 16.0f);
@@ -2603,9 +2603,6 @@ namespace bgfx
 	static RendererCreator s_rendererCreator[] =
 	{
 		{ noop::rendererCreate,   noop::rendererDestroy,   BGFX_RENDERER_NOOP_NAME,       true                              }, // Noop
-		{ d3d9::rendererCreate,   d3d9::rendererDestroy,   BGFX_RENDERER_DIRECT3D9_NAME,  !!BGFX_CONFIG_RENDERER_DIRECT3D9  }, // Direct3D9
-		{ d3d11::rendererCreate,  d3d11::rendererDestroy,  BGFX_RENDERER_DIRECT3D11_NAME, !!BGFX_CONFIG_RENDERER_DIRECT3D11 }, // Direct3D11
-		{ d3d12::rendererCreate,  d3d12::rendererDestroy,  BGFX_RENDERER_DIRECT3D12_NAME, !!BGFX_CONFIG_RENDERER_DIRECT3D12 }, // Direct3D12
 		{ gnm::rendererCreate,    gnm::rendererDestroy,    BGFX_RENDERER_GNM_NAME,        !!BGFX_CONFIG_RENDERER_GNM        }, // GNM
 #if BX_PLATFORM_OSX || BX_PLATFORM_IOS
 		{ mtl::rendererCreate,    mtl::rendererDestroy,    BGFX_RENDERER_METAL_NAME,      !!BGFX_CONFIG_RENDERER_METAL      }, // Metal
@@ -2615,8 +2612,6 @@ namespace bgfx
 		{ nvn::rendererCreate,    nvn::rendererDestroy,    BGFX_RENDERER_NVN_NAME,        !!BGFX_CONFIG_RENDERER_NVN        }, // NVN
 		{ gl::rendererCreate,     gl::rendererDestroy,     BGFX_RENDERER_OPENGL_NAME,     !!BGFX_CONFIG_RENDERER_OPENGLES   }, // OpenGLES
 		{ gl::rendererCreate,     gl::rendererDestroy,     BGFX_RENDERER_OPENGL_NAME,     !!BGFX_CONFIG_RENDERER_OPENGL     }, // OpenGL
-		{ vk::rendererCreate,     vk::rendererDestroy,     BGFX_RENDERER_VULKAN_NAME,     !!BGFX_CONFIG_RENDERER_VULKAN     }, // Vulkan
-		{ webgpu::rendererCreate, webgpu::rendererDestroy, BGFX_RENDERER_WEBGPU_NAME,     !!BGFX_CONFIG_RENDERER_WEBGPU     }, // WebGPU
 	};
 	BX_STATIC_ASSERT(BX_COUNTOF(s_rendererCreator) == RendererType::Count);
 
@@ -2671,27 +2666,8 @@ namespace bgfx
 
 				score += RendererType::Noop != renderer ? 1 : 0;
 
-				if (BX_ENABLED(BX_PLATFORM_WINDOWS) )
+				if (BX_ENABLED(BX_PLATFORM_LINUX) )
 				{
-					if (windowsVersionIs(Condition::GreaterEqual, 0x0602) )
-					{
-						score += RendererType::Direct3D11 == renderer ? 20 : 0;
-						score += RendererType::Direct3D12 == renderer ? 10 : 0;
-					}
-					else if (windowsVersionIs(Condition::GreaterEqual, 0x0601) )
-					{
-						score += RendererType::Direct3D11 == renderer ?   20 : 0;
-						score += RendererType::Direct3D9  == renderer ?   10 : 0;
-						score += RendererType::Direct3D12 == renderer ? -100 : 0;
-					}
-					else
-					{
-						score += RendererType::Direct3D12 == renderer ? -100 : 0;
-					}
-				}
-				else if (BX_ENABLED(BX_PLATFORM_LINUX) )
-				{
-					score += RendererType::Vulkan   == renderer ? 30 : 0;
 					score += RendererType::OpenGL   == renderer ? 20 : 0;
 					score += RendererType::OpenGLES == renderer ? 10 : 0;
 				}
@@ -2716,14 +2692,6 @@ namespace bgfx
 				else if (BX_ENABLED(BX_PLATFORM_PS4) )
 				{
 					score += RendererType::Gnm      == renderer ? 20 : 0;
-				}
-				else if (BX_ENABLED(0
-					 ||  BX_PLATFORM_XBOXONE
-					 ||  BX_PLATFORM_WINRT
-					 ) )
-				{
-					score += RendererType::Direct3D12 == renderer ? 20 : 0;
-					score += RendererType::Direct3D11 == renderer ? 10 : 0;
 				}
 
 				scores[numScores++] = (score<<8) | uint8_t(renderer);
@@ -3364,12 +3332,6 @@ namespace bgfx
 		uint8_t num = 0;
 		for (uint8_t ii = 0; ii < RendererType::Count; ++ii)
 		{
-			if ( (RendererType::Direct3D11 == ii || RendererType::Direct3D12 == ii)
-			&&  windowsVersionIs(Condition::LessEqual, 0x0502) )
-			{
-				continue;
-			}
-
 			if (NULL == _enum)
 			{
 				num++;

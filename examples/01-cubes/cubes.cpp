@@ -132,6 +132,8 @@ public:
 		, m_g(true)
 		, m_b(true)
 		, m_a(true)
+		, m_1stView(7)
+		, m_2ndView(0)
 	{
 	}
 
@@ -142,10 +144,11 @@ public:
 		m_width  = _width;
 		m_height = _height;
 		m_debug  = BGFX_DEBUG_NONE;
-		m_reset  = BGFX_RESET_VSYNC;
+		m_reset  = BGFX_RESET_VSYNC | BGFX_RESET_MSAA_X16;
 
 		bgfx::Init init;
-		init.type     = args.m_type;
+		//init.type     = args.m_type;
+		init.type = bgfx::RendererType::Enum::OpenGL;
 		init.vendorId = args.m_pciId;
 		init.resolution.width  = m_width;
 		init.resolution.height = m_height;
@@ -156,7 +159,7 @@ public:
 		bgfx::setDebug(m_debug);
 
 		// Set view 0 clear state.
-		bgfx::setViewClear(0
+		bgfx::setViewClear(m_1stView
 			, BGFX_CLEAR_COLOR|BGFX_CLEAR_DEPTH
 			, 0x303030ff
 			, 1.0f
@@ -203,6 +206,12 @@ public:
 			bgfx::makeRef(s_cubePoints, sizeof(s_cubePoints) )
 			);
 
+		m_fbh1.idx = bgfx::kInvalidHandle;
+
+		m_fbh1 = bgfx::createFrameBuffer(bgfx::BackbufferRatio::Equal, bgfx::TextureFormat::BGRA8);
+
+		bgfx::setViewFrameBuffer(m_1stView, m_fbh1);
+
 		// Create program from shaders.
 		m_program = loadProgram("vs_cubes", "fs_cubes");
 
@@ -234,42 +243,7 @@ public:
 	{
 		if (!entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState) )
 		{
-			imguiBeginFrame(m_mouseState.m_mx
-				,  m_mouseState.m_my
-				, (m_mouseState.m_buttons[entry::MouseButton::Left  ] ? IMGUI_MBUT_LEFT   : 0)
-				| (m_mouseState.m_buttons[entry::MouseButton::Right ] ? IMGUI_MBUT_RIGHT  : 0)
-				| (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0)
-				,  m_mouseState.m_mz
-				, uint16_t(m_width)
-				, uint16_t(m_height)
-				);
-
-			showExampleDialog(this);
-
-			ImGui::SetNextWindowPos(
-				  ImVec2(m_width - m_width / 5.0f - 10.0f, 10.0f)
-				, ImGuiCond_FirstUseEver
-				);
-			ImGui::SetNextWindowSize(
-				  ImVec2(m_width / 5.0f, m_height / 3.5f)
-				, ImGuiCond_FirstUseEver
-				);
-			ImGui::Begin("Settings"
-				, NULL
-				, 0
-				);
-
-			ImGui::Checkbox("Write R", &m_r);
-			ImGui::Checkbox("Write G", &m_g);
-			ImGui::Checkbox("Write B", &m_b);
-			ImGui::Checkbox("Write A", &m_a);
-
-			ImGui::Text("Primitive topology:");
-			ImGui::Combo("", (int*)&m_pt, s_ptNames, BX_COUNTOF(s_ptNames) );
-
-			ImGui::End();
-
-			imguiEndFrame();
+			drawImgui();
 
 			float time = (float)( (bx::getHPCounter()-m_timeOffset)/double(bx::getHPFrequency() ) );
 
@@ -283,10 +257,10 @@ public:
 
 				float proj[16];
 				bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-				bgfx::setViewTransform(0, view, proj);
+				bgfx::setViewTransform(m_1stView, view, proj);
 
 				// Set view 0 default viewport.
-				bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height) );
+				bgfx::setViewRect(m_1stView, 0, 0, uint16_t(m_width), uint16_t(m_height) );
 			}
 
 			// This dummy draw call is here to make sure that view 0 is cleared
@@ -309,7 +283,7 @@ public:
 			// Submit 11x11 cubes.
 			for (uint32_t yy = 0; yy < 11; ++yy)
 			{
-				for (uint32_t xx = 0; xx < 11; ++xx)
+				for (uint32_t xx = 0; xx < 17; ++xx)
 				{
 					float mtx[16];
 					bx::mtxRotateXY(mtx, time + xx*0.21f, time + yy*0.37f);
@@ -328,8 +302,15 @@ public:
 					bgfx::setState(state);
 
 					// Submit primitive for rendering to view 0.
-					bgfx::submit(0, m_program);
+					bgfx::submit(m_1stView, m_program);
 				}
+			}
+
+			auto fb1tx1 = bgfx::getTexture(m_fbh1);
+			if(bgfx::isValid(fb1tx1)) {
+
+			} else {
+				bx::debugBreak();
 			}
 
 			// Advance to next frame. Rendering thread will be kicked to
@@ -340,6 +321,46 @@ public:
 		}
 
 		return false;
+	}
+
+	void drawImgui()
+	{
+		imguiBeginFrame(m_mouseState.m_mx
+			, m_mouseState.m_my
+			, (m_mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0)
+			| (m_mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0)
+			| (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0)
+			, m_mouseState.m_mz
+			, uint16_t(m_width)
+			, uint16_t(m_height)
+		);
+
+		showExampleDialog(this);
+
+		ImGui::SetNextWindowPos(
+			ImVec2(m_width - m_width / 5.0f - 10.0f, 10.0f)
+			, ImGuiCond_FirstUseEver
+		);
+		ImGui::SetNextWindowSize(
+			ImVec2(m_width / 5.0f, m_height / 3.5f)
+			, ImGuiCond_FirstUseEver
+		);
+		ImGui::Begin("Settings"
+			, NULL
+			, 0
+		);
+
+		ImGui::Checkbox("Write R", &m_r);
+		ImGui::Checkbox("Write G", &m_g);
+		ImGui::Checkbox("Write B", &m_b);
+		ImGui::Checkbox("Write A", &m_a);
+
+		ImGui::Text("Primitive topology:");
+		ImGui::Combo("", (int*)&m_pt, s_ptNames, BX_COUNTOF(s_ptNames));
+
+		ImGui::End();
+
+		imguiEndFrame();
 	}
 
 	entry::MouseState m_mouseState;
@@ -353,6 +374,10 @@ public:
 	bgfx::ProgramHandle m_program;
 	int64_t m_timeOffset;
 	int32_t m_pt;
+
+	bgfx::FrameBufferHandle m_fbh1{};
+	bgfx::ViewId m_1stView{};
+	bgfx::ViewId m_2ndView{};
 
 	bool m_r;
 	bool m_g;
