@@ -105,11 +105,7 @@ static bgfx::ShaderHandle loadShader(bx::FileReaderI* _reader, const char* _name
 	switch (bgfx::getRendererType() )
 	{
 	case bgfx::RendererType::Noop:
-	case bgfx::RendererType::Gnm:        shaderPath = "shaders/pssl/";  break;
-	case bgfx::RendererType::Metal:      shaderPath = "shaders/metal/"; break;
-	case bgfx::RendererType::Nvn:        shaderPath = "shaders/nvn/";   break;
 	case bgfx::RendererType::OpenGL:     shaderPath = "shaders/glsl/";  break;
-	case bgfx::RendererType::OpenGLES:   shaderPath = "shaders/essl/";  break;
 
 	case bgfx::RendererType::Count:
 		BX_ASSERT(false, "You should not be here!");
@@ -691,13 +687,6 @@ Args::Args(int _argc, const char* const* _argv)
 	else if (cmdLine.hasArg("noop") )
 	{
 		m_type = bgfx::RendererType::Noop;
-	}
-	else if (BX_ENABLED(BX_PLATFORM_OSX) )
-	{
-		if (cmdLine.hasArg("mtl") )
-		{
-			m_type = bgfx::RendererType::Metal;
-		}
 	}
 
 	if (cmdLine.hasArg("amd") )

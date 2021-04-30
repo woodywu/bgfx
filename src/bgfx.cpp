@@ -2603,14 +2603,6 @@ namespace bgfx
 	static RendererCreator s_rendererCreator[] =
 	{
 		{ noop::rendererCreate,   noop::rendererDestroy,   BGFX_RENDERER_NOOP_NAME,       true                              }, // Noop
-		{ gnm::rendererCreate,    gnm::rendererDestroy,    BGFX_RENDERER_GNM_NAME,        !!BGFX_CONFIG_RENDERER_GNM        }, // GNM
-#if BX_PLATFORM_OSX || BX_PLATFORM_IOS
-		{ mtl::rendererCreate,    mtl::rendererDestroy,    BGFX_RENDERER_METAL_NAME,      !!BGFX_CONFIG_RENDERER_METAL      }, // Metal
-#else
-		{ noop::rendererCreate,   noop::rendererDestroy,   BGFX_RENDERER_NOOP_NAME,       false                             }, // Noop
-#endif // BX_PLATFORM_OSX || BX_PLATFORM_IOS
-		{ nvn::rendererCreate,    nvn::rendererDestroy,    BGFX_RENDERER_NVN_NAME,        !!BGFX_CONFIG_RENDERER_NVN        }, // NVN
-		{ gl::rendererCreate,     gl::rendererDestroy,     BGFX_RENDERER_OPENGL_NAME,     !!BGFX_CONFIG_RENDERER_OPENGLES   }, // OpenGLES
 		{ gl::rendererCreate,     gl::rendererDestroy,     BGFX_RENDERER_OPENGL_NAME,     !!BGFX_CONFIG_RENDERER_OPENGL     }, // OpenGL
 	};
 	BX_STATIC_ASSERT(BX_COUNTOF(s_rendererCreator) == RendererType::Count);
@@ -2669,29 +2661,10 @@ namespace bgfx
 				if (BX_ENABLED(BX_PLATFORM_LINUX) )
 				{
 					score += RendererType::OpenGL   == renderer ? 20 : 0;
-					score += RendererType::OpenGLES == renderer ? 10 : 0;
 				}
 				else if (BX_ENABLED(BX_PLATFORM_OSX) )
 				{
-					score += RendererType::Metal    == renderer ? 20 : 0;
 					score += RendererType::OpenGL   == renderer ? 10 : 0;
-				}
-				else if (BX_ENABLED(BX_PLATFORM_IOS) )
-				{
-					score += RendererType::Metal    == renderer ? 20 : 0;
-					score += RendererType::OpenGLES == renderer ? 10 : 0;
-				}
-				else if (BX_ENABLED(0
-					 ||  BX_PLATFORM_ANDROID
-					 ||  BX_PLATFORM_EMSCRIPTEN
-					 ||  BX_PLATFORM_RPI
-					 ) )
-				{
-					score += RendererType::OpenGLES == renderer ? 20 : 0;
-				}
-				else if (BX_ENABLED(BX_PLATFORM_PS4) )
-				{
-					score += RendererType::Gnm      == renderer ? 20 : 0;
 				}
 
 				scores[numScores++] = (score<<8) | uint8_t(renderer);

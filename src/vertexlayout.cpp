@@ -44,10 +44,6 @@ namespace bgfx
 	static const uint8_t (*s_attribTypeSize[])[AttribType::Count][4] =
 	{
 		&s_attribTypeSizeD3D9,  // Noop
-		&s_attribTypeSizeD3D1x, // Gnm
-		&s_attribTypeSizeGl,    // Metal
-		&s_attribTypeSizeGl,    // Nvn
-		&s_attribTypeSizeGl,    // OpenGLES
 		&s_attribTypeSizeGl,    // OpenGL
 		&s_attribTypeSizeD3D9,  // Count
 	};

@@ -3101,8 +3101,8 @@ namespace bgfx { namespace gl
 			{
 				return RendererType::OpenGL;
 			}
-
-			return RendererType::OpenGLES;
+			BX_ASSERT(false, "gl es support has been removed, shouldn't reach here!");
+			return RendererType::Noop;
 		}
 
 		const char* getRendererName() const override
