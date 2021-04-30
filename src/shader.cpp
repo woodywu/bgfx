@@ -112,7 +112,7 @@ namespace bgfx
 		return s_textureDimensionToId[_dim].id;
 	}
 
-	void disassembleByteCode(bx::WriterI* _writer, bx::ReaderSeekerI* _reader, bx::Error* _err)
+	void disassembleByteCode(bx::WriterI* /*_writer*/, bx::ReaderSeekerI* _reader, bx::Error* /*_err*/)
 	{
 		uint32_t magic;
 		bx::peek(_reader, magic);

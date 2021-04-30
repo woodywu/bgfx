@@ -270,7 +270,7 @@ public:
 
 		m_timeOffset = bx::getHPCounter();
 		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-		s_texelHalf = bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
+		s_texelHalf = 0.0f;
 
 		// Get renderer capabilities info.
 		m_caps = bgfx::getCaps();
