@@ -376,7 +376,7 @@ namespace
 
 			// Get renderer capabilities info.
 			const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-			m_texelHalf = bgfx::RendererType::Direct3D9 == renderer ? 0.5f : 0.0f;
+			m_texelHalf = 0.0f;
 
 			imguiCreate();
 		}
